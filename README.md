@@ -14,7 +14,7 @@ b'Hello, World!'
 ```
 ### Documentation
 
-cryptfile.**open**(*file, mode, aes_key=None, block_num=1000*)
+cryptfile.**open**(*file, mode, aes_key=None, block_num=10000*)
 
 Returns a CryptFile object for a specified file.  
  - *file* can either be a string containing a valid path, or a file-like object.
