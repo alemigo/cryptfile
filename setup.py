@@ -24,13 +24,14 @@ def find_version(*file_paths):
 
 setuptools.setup(
     name="cryptfile",
-    version=find_version("splitfile","__init__.py"),
+    version=find_version("cryptfile","__init__.py"),
     author="github.com/alemigo",
     description="General purpose Python encrypted file-like object with random IO.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/alemigo/cryptfile",
     packages=setuptools.find_packages(),
+    install_requires=['pycryptodome'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

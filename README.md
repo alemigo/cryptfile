@@ -19,8 +19,8 @@ cryptfile.**open**(*file, mode, aes_key=None, block_num=10000*)
 Returns a CryptFile object for a specified file.  
  - *file* can either be a string containing a valid path, or a file-like object.
  - Supported *mode* values are: `wb, wb+, rb, rb+, ab, ab+`. 
- - 256 bit binary *aes_key* is used for en/decryption, or if none is provided for a new file, a random key is generated and is retreivable with the `.aeskey` property.
- - *block_num* sets the number of 16 byte AES blocks per cryptfile block for new files.  Each cryptfile block stores its own 8 byte nonce value, and needs to be re-written in whole if any part of the block is altered.  Larger *block_num* values optimize for more sequential IO, whereas smaller values optimize for smaller random IO that jumps around the file.  This argument is not needed for opening existing files.  
+ - 256 bit binary *aes_key* is used for en/decryption, or if none is provided for a new file, a random key is generated and is retrievable with the `.aeskey` property.
+ - *block_num* sets the number of 16 byte AES blocks per cryptfile block for new files.  Each cryptfile block stores its own 8 byte nonce value, and is re-written in whole if any part of the block is altered.  Larger *block_num* values optimize for more sequential IO, whereas smaller values optimize for smaller random IO that jumps around the file.  This argument is not needed for opening existing files.  
 
 ### Dependencies
 
