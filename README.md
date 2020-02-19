@@ -1,4 +1,4 @@
-General purpose Python encrypted file-like object that facilitates random access IO.  Uses AES encryption in CTR mode.  Can be used with modules such as tarfile, zipfile, lzma, and others that accept a file-like object as an alternative to a path.  Supports binary IO modes only.
+General purpose Python encrypted file-like object that facilitates random access IO.  Uses AES encryption in CTR mode.  Can be used with modules such as tarfile, zipfile, lzma, pickle, json and others that accept a file-like object as an alternative to a path.  Supports binary IO modes only.
 
 ### Examples
 ```
