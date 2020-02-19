@@ -28,7 +28,6 @@ class CryptFile(object):
     file_size = None  # Track size of file
     aes_key = None  # Encryption key (32 bytes for AES 256)
     cipher = None  # AES object
-    cipher_counter = None  # Track CTR counter
     file_closed = False  # Boolean has file been closed
     block_size = None  # Number of bytes per nonce (inclusive of 8 byte nonce)
     block_num = None  # Number of 16 byte AES blocks per cryptfile block
@@ -115,9 +114,15 @@ class CryptFile(object):
             wbuffer = io.BytesIO()
             wbuffer_len = 0
 
-            bindex, bstart, bpos, abindex, abstart, abpos = self._calc_pos_data(
-                self.fpos
-            )
+            (
+                bindex,
+                bstart,
+                bpos,
+                abindex,
+                abstart,
+                abpos,
+                fabindex,
+            ) = self._calc_pos_data(self.fpos)
 
             # get block nonce, or set new if doesnt exist (new block)
             if bindex != self.cur_bindex:
@@ -133,8 +138,14 @@ class CryptFile(object):
                     data2 = self.file.read(bpos - 8)
 
                     self.cipher = AES.new(
-                        self.aes_key, AES.MODE_CTR, nonce=old_nonce, initial_value=0
+                        self.aes_key,
+                        AES.MODE_CTR,
+                        nonce=old_nonce,
+                        initial_value=fabindex,
                     )
+                    # self.cipher = AES.new(
+                    #     self.aes_key, AES.MODE_CTR, nonce=old_nonce, initial_value=0
+                    # )
                     data2 = self.cipher.decrypt(data2)
                     wbuffer_len += wbuffer.write(data2)
             else:
@@ -152,7 +163,7 @@ class CryptFile(object):
                 and data_pos == data_len
                 and bstart + self.block_size > (wstart + wbuffer_len)
             ):
-                _, _, _, abindex2, abstart2, abpos2 = self._calc_pos_data(
+                _, _, _, abindex2, abstart2, abpos2, fabindex2 = self._calc_pos_data(
                     wstart + wbuffer_len
                 )
 
@@ -162,8 +173,14 @@ class CryptFile(object):
                 data2 = self.file.read(read_len)
 
                 self.cipher = AES.new(
-                    self.aes_key, AES.MODE_CTR, nonce=old_nonce, initial_value=abindex2,
+                    self.aes_key,
+                    AES.MODE_CTR,
+                    nonce=old_nonce,
+                    initial_value=fabindex2 + abindex2,
                 )
+                # self.cipher = AES.new(
+                #     self.aes_key, AES.MODE_CTR, nonce=old_nonce, initial_value=abindex2,
+                # )
                 data2 = self.cipher.decrypt(data2)
                 wbuffer_len += wbuffer.write(data2[abpos2:])
 
@@ -171,16 +188,25 @@ class CryptFile(object):
             wbuffer.seek(0)
             if new_nonce:
                 self.cipher = AES.new(
-                    self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=0,
+                    self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=fabindex
                 )
+                # self.cipher = AES.new(
+                #     self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=0,
+                # )
                 self.file.seek(bstart)
                 self.fpos = bstart + self.file.write(
                     self.nonce + self.cipher.encrypt(wbuffer.read())
                 )
             else:
                 self.cipher = AES.new(
-                    self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=abindex
+                    self.aes_key,
+                    AES.MODE_CTR,
+                    nonce=self.nonce,
+                    initial_value=fabindex + abindex,
                 )
+                # self.cipher = AES.new(
+                #     self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=abindex
+                # )
                 self.file.seek(wstart)
                 self.fpos = wstart + self.file.write(
                     self.cipher.encrypt(b"0" * abpos + wbuffer.read())[abpos:]
@@ -234,16 +260,21 @@ class CryptFile(object):
         while not nl_found and (size == -1 or rbuffer_len < size):
             # read data
             # get coordinates
-            bindex, bstart, bpos, abindex, abstart, abpos = self._calc_pos_data(
-                self.fpos
-            )
+            (
+                bindex,
+                bstart,
+                bpos,
+                abindex,
+                abstart,
+                abpos,
+                fabindex,
+            ) = self._calc_pos_data(self.fpos)
 
             # check if need to read new nonce
             if bindex != self.cur_bindex:
                 self.file.seek(bstart)
                 self.nonce = self.file.read(8)
                 self.cur_bindex = bindex
-                self.cipher_counter = None
 
             # read data
             self.file.seek(abstart)
@@ -262,10 +293,12 @@ class CryptFile(object):
                 break
 
             # check if new cipher object needed
-            if self.cipher_counter != abindex:
-                self.cipher = AES.new(
-                    self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=abindex,
-                )
+            self.cipher = AES.new(
+                self.aes_key,
+                AES.MODE_CTR,
+                nonce=self.nonce,
+                initial_value=fabindex + abindex,
+            )
 
             data = self.cipher.decrypt(data)[abpos:]
             self.fpos += max(8 - bpos, 0) + len(data)
@@ -278,13 +311,21 @@ class CryptFile(object):
                     self.buffer = data[nl + 1 :]
                     break
 
-            if not line or nl == -1: # not line mode or \n not found
+            if not line or nl == -1:  # not line mode or \n not found
                 rbuffer_len += rbuffer.write(data)
 
         # return data and adjust buffer
         self.rpos += rbuffer_len
         rbuffer.seek(0)
         return rbuffer.read()
+
+    def readinto(b):
+        """readinto implementation"""
+        data = self.read()
+        dlen = len(data)
+
+        b[:dlen] = data
+        return dlen
 
     def readline(self, size=-1):
         """readline implementation"""
@@ -357,7 +398,7 @@ class CryptFile(object):
             raise ValueError("Size parameter cannot be negative for truncate operation")
 
         self.fpos = self._calc_fpos(size)
-        _, _, bpos, _, _, _ = self._calc_pos_data(self.fpos)
+        bpos = max(self.fpos - 8, 0) % self.block_size  # position within block
 
         if bpos <= 8:
             self.fpos -= bpos
@@ -429,7 +470,8 @@ class CryptFile(object):
         abstart = bstart + 8 + (abindex * self.AES_BLOCK_SIZE)
         abpos = max(bpos - 8, 0) % self.AES_BLOCK_SIZE  # position within aes block
 
-        return bindex, bstart, bpos, abindex, abstart, abpos
+        fabindex = bindex * self.block_num  # index of first aes block in whole file
+        return bindex, bstart, bpos, abindex, abstart, abpos, fabindex
 
     def __enter__(self):
         return self
