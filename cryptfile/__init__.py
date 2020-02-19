@@ -143,9 +143,6 @@ class CryptFile(object):
                         nonce=old_nonce,
                         initial_value=fabindex,
                     )
-                    # self.cipher = AES.new(
-                    #     self.aes_key, AES.MODE_CTR, nonce=old_nonce, initial_value=0
-                    # )
                     data2 = self.cipher.decrypt(data2)
                     wbuffer_len += wbuffer.write(data2)
             else:
@@ -178,9 +175,6 @@ class CryptFile(object):
                     nonce=old_nonce,
                     initial_value=fabindex2 + abindex2,
                 )
-                # self.cipher = AES.new(
-                #     self.aes_key, AES.MODE_CTR, nonce=old_nonce, initial_value=abindex2,
-                # )
                 data2 = self.cipher.decrypt(data2)
                 wbuffer_len += wbuffer.write(data2[abpos2:])
 
@@ -190,9 +184,6 @@ class CryptFile(object):
                 self.cipher = AES.new(
                     self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=fabindex
                 )
-                # self.cipher = AES.new(
-                #     self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=0,
-                # )
                 self.file.seek(bstart)
                 self.fpos = bstart + self.file.write(
                     self.nonce + self.cipher.encrypt(wbuffer.read())
@@ -204,9 +195,6 @@ class CryptFile(object):
                     nonce=self.nonce,
                     initial_value=fabindex + abindex,
                 )
-                # self.cipher = AES.new(
-                #     self.aes_key, AES.MODE_CTR, nonce=self.nonce, initial_value=abindex
-                # )
                 self.file.seek(wstart)
                 self.fpos = wstart + self.file.write(
                     self.cipher.encrypt(b"0" * abpos + wbuffer.read())[abpos:]
