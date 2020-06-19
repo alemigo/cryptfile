@@ -1,6 +1,6 @@
 General purpose Python encrypted file-like object that facilitates random access IO.  Uses AES encryption in CTR mode.  Can be used with modules such as tarfile, zipfile, lzma, pickle, json and others that accept a file-like object as an alternative to a path.  Supports binary IO modes only.
 
-Cryptfile uses its own file format by writing and encrypting data across blocks which each store their own CTR nonce value.  Safe random access is achieved by reencrypting any block that receives a write with a new random nonce value. 
+Cryptfile uses its own file format by writing and encrypting data across blocks which each block using and storing a unique CTR nonce value.  Safe random access is achieved by reencrypting any block that receives a write with a new random nonce value. 
 
 Also includes CryptFileStream which is an encrypted file-like object that facilitiates stream IO with a single nonce.
 
