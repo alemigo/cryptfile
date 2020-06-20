@@ -1,6 +1,6 @@
 General purpose Python encrypted file-like object that facilitates random access IO.  Uses AES encryption in CTR mode.  Can be used with modules such as tarfile, zipfile, lzma, pickle, json and others that accept a file-like object as an alternative to a path.  Supports binary IO modes only.
 
-Cryptfile uses its own file format by writing and encrypting data across blocks which each block using and storing a unique CTR nonce value.  Safe random access is achieved by reencrypting any block that receives a write with a new random nonce value. 
+Cryptfile uses its own file format by writing and encrypting data across blocks with each block using and storing a unique CTR nonce value.  Safe random access is achieved by reencrypting any block that receives a write with a new random nonce value. 
 
 Also includes CryptFileStream which is an encrypted file-like object that facilitiates stream IO with a single nonce.
 
@@ -26,7 +26,7 @@ Returns a CryptFile object for a specified file.
  - 256 bit binary *aes_key* is used for en/decryption, or if none is provided for a new file, a random key is generated and is retrievable with the `.aeskey` property.
  - *block_num* sets the number of 16 byte AES blocks per cryptfile block for new files.  Each cryptfile block stores its own 8 byte nonce value, and is re-written in whole if any part of the block is altered.  Larger *block_num* values optimize for more sequential IO, whereas smaller values optimize for smaller random IO that jumps around the file.  This argument is not needed for opening existing files.  
 
-
+<br/>
 cryptfilestream.**open**(*file, mode, aes_key=None*)
 
 Returns a CryptFileStream object for a specified file.  

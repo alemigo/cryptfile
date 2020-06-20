@@ -3,7 +3,7 @@
 # cryptfilestream
 # -----------------------------
 #
-"""Python encrypted file-like object that supports encrypted stream IO.
+"""Python encrypted file-like object that supports stream IO.
 """
 
 __version__ = "1.0.5"
@@ -13,7 +13,6 @@ __author__ = "github.com/alemigo"
 from builtins import open as python_open
 import os
 import io
-import struct
 from Crypto.Cipher import AES  # PyCryptodome
 
 # from cryptfilestream import *
