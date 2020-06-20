@@ -26,7 +26,6 @@ Returns a CryptFile object for a specified file.
  - 256 bit binary *aes_key* is used for en/decryption, or if none is provided for a new file, a random key is generated and is retrievable with the `.aeskey` property.
  - *block_num* sets the number of 16 byte AES blocks per cryptfile block for new files.  Each cryptfile block stores its own 8 byte nonce value, and is re-written in whole if any part of the block is altered.  Larger *block_num* values optimize for more sequential IO, whereas smaller values optimize for smaller random IO that jumps around the file.  This argument is not needed for opening existing files.  
 
-<br/>
 cryptfilestream.**open**(*file, mode, aes_key=None*)
 
 Returns a CryptFileStream object for a specified file.  
