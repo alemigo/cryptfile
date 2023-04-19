@@ -307,13 +307,18 @@ class CryptFile(object):
         rbuffer.seek(0)
         return rbuffer.read()
 
-    def readinto(b):
+    def readinto(self, b):
         """readinto implementation"""
-        data = self.read()
-        dlen = len(data)
+        if not isinstance(b, memoryview):
+            b = memoryview(b)
+        b = b.cast('B')
 
-        b[:dlen] = data
-        return dlen
+        data = self.read(len(b))
+        n = len(data)
+
+        b[:n] = data
+
+        return n
 
     def readline(self, size=-1):
         """readline implementation"""
